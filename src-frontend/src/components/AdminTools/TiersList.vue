@@ -116,13 +116,12 @@
       </template>
       <template v-slot:top-left>
         <q-btn
+          color="accent"
+          :icon="icons.add"
+          :label="$t('tiers.add')"
+          class="q-mb-sm"
           @click="addTierDialog = true"
-          round
-          color="primary"
-          :icon="icons.addAlternative"
-        >
-          <q-tooltip :delay="500">{{ $t('tiers.add') }}</q-tooltip>
-        </q-btn>
+        />
       </template>
     </q-table>
   </div>

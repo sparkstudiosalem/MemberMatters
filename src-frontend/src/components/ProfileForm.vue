@@ -4,71 +4,41 @@
       <q-input
         v-model="form.email"
         outlined
-        :debounce="debounceLength"
+        no-error-icon
+        readonly
         :label="$t('form.email')"
-        :rules="[(val) => validateEmail(val) || $t('validation.invalidEmail')]"
-        @update:model-value="saveChange('email')"
+        hint="To change your email address, update it in your Authentik Account Settings."
       >
         <template v-slot:append>
-          <saved-notification
-            :success="saved.email"
-            show-text
-            :error="saved.error"
-          />
+          <q-btn
+            flat
+            dense
+            round
+            icon="mdi-open-in-new"
+            color="primary"
+            type="a"
+            href="https://auth.sparkstudiosalem.com/if/user/#/settings;page-user-settings"
+            target="_blank"
+          >
+            <q-tooltip>Manage account in Authentik</q-tooltip>
+          </q-btn>
         </template>
       </q-input>
 
       <q-input
-        v-model="form.firstName"
+        v-model="form.fullName"
         outlined
+        no-error-icon
         :debounce="debounceLength"
-        :label="$t('form.firstName')"
+        label="Full name *"
         :rules="[
           (val) => validateNotEmpty(val) || $t('validation.cannotBeEmpty'),
         ]"
-        @update:model-value="saveChange('firstName')"
+        @update:model-value="saveFullName"
       >
         <template v-slot:append>
           <saved-notification
-            :success="saved.firstName"
-            show-text
-            :error="saved.error"
-          />
-        </template>
-      </q-input>
-
-      <q-input
-        v-model="form.lastName"
-        outlined
-        :debounce="debounceLength"
-        :label="$t('form.lastName')"
-        :rules="[
-          (val) => validateNotEmpty(val) || $t('validation.cannotBeEmpty'),
-        ]"
-        @update:model-value="saveChange('lastName')"
-      >
-        <template v-slot:append>
-          <saved-notification
-            :success="saved.lastName"
-            show-text
-            :error="saved.error"
-          />
-        </template>
-      </q-input>
-
-      <q-input
-        v-model="form.phone"
-        outlined
-        :debounce="debounceLength"
-        :label="$t('form.mobile')"
-        :rules="[
-          (val) => validateNotEmpty(val) || $t('validation.invalidPhone'),
-        ]"
-        @update:model-value="saveChange('phone')"
-      >
-        <template v-slot:append>
-          <saved-notification
-            :success="saved.phone"
+            :success="saved.fullName"
             show-text
             :error="saved.error"
           />
@@ -78,6 +48,7 @@
       <q-input
         v-model="form.screenName"
         outlined
+        no-error-icon
         :debounce="debounceLength"
         :label="$t('form.screenName')"
         :rules="[
@@ -95,9 +66,30 @@
       </q-input>
 
       <q-input
+        v-model="form.phone"
+        outlined
+        no-error-icon
+        :debounce="debounceLength"
+        :label="$t('form.mobile')"
+        :rules="[
+          (val) => validateNotEmpty(val) || $t('validation.invalidPhone'),
+        ]"
+        @update:model-value="saveChange('phone')"
+      >
+        <template v-slot:append>
+          <saved-notification
+            :success="saved.phone"
+            show-text
+            :error="saved.error"
+          />
+        </template>
+      </q-input>
+
+      <q-input
         v-if="features?.signup?.collectVehicleRegistrationPlate"
         v-model="form.vehicleRegistrationPlate"
         outlined
+        no-error-icon
         :debounce="debounceLength"
         :label="$t('form.vehicleRegistrationPlate')"
         :rules="[(val) => validateMax30(val) || $t('validation.max30')]"
@@ -131,6 +123,7 @@ export default {
     return {
       form: {
         email: '',
+        fullName: '',
         firstName: '',
         lastName: '',
         phone: '',
@@ -142,6 +135,7 @@ export default {
         error: false,
 
         email: false,
+        fullName: false,
         firstName: false,
         lastName: false,
         phone: false,
@@ -154,12 +148,18 @@ export default {
     ...mapActions('profile', ['getProfile']),
     loadInitialForm() {
       this.form.email = this.profile.email;
-      this.form.firstName = this.profile.firstName;
-      this.form.lastName = this.profile.lastName;
+      this.form.fullName = (this.profile.firstName || '').trim();
+      this.form.firstName = (this.profile.firstName || '').trim();
+      this.form.lastName = '';
       this.form.phone = this.profile.phone;
       this.form.screenName = this.profile.screenName;
       this.form.vehicleRegistrationPlate =
         this.profile.vehicleRegistrationPlate;
+    },
+    saveFullName() {
+      this.form.firstName = (this.form.fullName || '').trim();
+      this.form.lastName = '';
+      this.saveChange('fullName');
     },
     saveChange(field) {
       this.$refs.formRef.validate(false).then(() => {

@@ -1,80 +1,76 @@
-import { Platform, Dialog } from 'quasar';
-import { i18n } from 'boot/i18n';
 import { boot } from 'quasar/wrappers';
+import { Dialog } from 'quasar';
+import i18n from 'src/i18n';
 
 export default boot(({ router, store }) => {
-  router.beforeEach((to, from, next) => {
-    // if we're in kiosk mode disallow certain pages
-    if (Platform.is.electron) {
-      if (!to.meta.kiosk) {
-        return next({ name: 'dashboard' });
+  router.beforeEach(async (to, from, next) => {
+    // Ensure auth state & profile are initialized
+    let loggedIn = store.getters['profile/loggedIn'];
+    if (!loggedIn) {
+      try {
+        await store.dispatch('auth/retrieveAuth');
+        await store.dispatch('profile/getLoggedIn');
+        loggedIn = store.getters['profile/loggedIn'];
+      } catch (e) {
+        // Ignore auth retrieval errors on public routes
       }
     }
 
-    if (
-      store.getters['profile/profile']?.memberStatus === 'noob' &&
-      to.name !== 'membershipPlan' &&
-      to.name !== 'webcams' &&
-      to.name !== 'billing' &&
-      store.getters['config/features']?.enableMembershipPayments &&
-      to.meta.admin !== true
-    ) {
-      Dialog.create({
-        title: i18n.global.t('error.error'),
-        message: i18n.global.t('error.403MemberOnly'),
-      });
+    const profile = store.getters['profile/profile'] || {};
+
+    // Check if current user has administrative / staff privileges
+    const isStaffOrAdmin = Boolean(
+      profile?.permissions?.isStaff ||
+        profile?.permissions?.isSuperuser ||
+        profile?.isStaff ||
+        profile?.isSuperuser ||
+        profile?.is_staff ||
+        profile?.is_superuser
+    );
+
+    // 1. Require Authentication Guard - Auto-direct directly to SSO
+    if (to.matched.some((record) => record.meta?.requiresAuth) && !loggedIn) {
+      window.location.href = `/api/auth/authentik/login/?next=${encodeURIComponent(to.fullPath || '/dashboard')}`;
       return;
     }
 
-    // Check if the user must be logged in to access the route
-    if (to.meta.loggedIn === true && to.name !== 'webcams') {
-      if (store.getters['profile/loggedIn'] === true) return next();
-      else {
-        return next({
-          name: 'login',
-          query: {
-            nextUrl: to.fullPath,
-          },
-        });
-      }
+    // 2. Require Admin / Staff Guard
+    if (to.matched.some((record) => record.meta?.requiresAdmin) && !isStaffOrAdmin) {
+      Dialog.create({
+        title: i18n.global.t('error.error'),
+        message: i18n.global.t('error.403'),
+      });
+      return next({ name: 'dashboard' });
     }
 
-    // Check if the user must be an admin to access the route
-    if (to.meta.admin === true) {
-      if (store.getters['profile/profile'].permissions.staff === true)
+    // 3. Require Active Member Guard
+    if (to.matched.some((record) => record.meta?.requiresActiveMember)) {
+      // Bypass active membership requirement for Admin / Staff users
+      if (isStaffOrAdmin) {
         return next();
-      else {
-        return next({ name: 'Error403' });
+      }
+
+      // Enforce active membership check for standard non-admin users
+      const memberStatus = (
+        profile?.memberStatus ||
+        profile?.state ||
+        ''
+      ).toLowerCase();
+
+      const isActiveMember =
+        memberStatus === 'active' ||
+        memberStatus === 'financial' ||
+        profile?.isMember === true;
+
+      if (!isActiveMember) {
+        Dialog.create({
+          title: i18n.global.t('error.error'),
+          message: i18n.global.t('error.403MemberOnly'),
+        });
+        return next({ name: 'Error403MemberOnly' });
       }
     }
 
-    // check if the user must be a member
-    if (
-      to.meta.memberOnly &&
-      to.name !== 'webcams' &&
-      store.getters['profile/profile'].memberStatus !== 'active'
-    )
-      return next({ name: 'Error403MemberOnly' });
-
-    // if we are authenticating via SSO then don't update the route unless we're registering
-    if (!from.query.sso || to.name === 'register') {
-      return next();
-    }
-  });
-
-  router.afterEach(() => {
-    // eslint-disable-next-line
-    // @ts-ignore
-    if (typeof ga !== 'undefined') {
-      // eslint-disable-next-line
-      // @ts-ignore
-      ga('send', 'pageview');
-    }
-  });
-
-  router.onError((error) => {
-    if (/loading chunk \d* failed./i.test(error.message)) {
-      window.location.reload();
-    }
+    return next();
   });
 });

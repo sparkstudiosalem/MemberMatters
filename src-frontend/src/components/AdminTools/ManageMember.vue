@@ -1,7 +1,7 @@
 <template>
   <div class="">
     <h3 class="q-mt-none q-mb-md">
-      {{ profileForm.firstName }} {{ profileForm.lastName }} ({{
+      {{ profileForm.firstName }} ({{
         profileForm.screenName
       }})
     </h3>
@@ -166,8 +166,9 @@
                 <q-input
                   v-model="profileForm.firstName"
                   outlined
+                  no-error-icon
                   :debounce="debounceLength"
-                  :label="$t('form.firstName')"
+                  label="Full name"
                   :rules="[
                     (val) =>
                       validateNotEmpty(val) || $t('validation.cannotBeEmpty'),
@@ -177,25 +178,6 @@
                   <template #append>
                     <saved-notification
                       :success="saved.firstName"
-                      :error="saved.error"
-                    />
-                  </template>
-                </q-input>
-
-                <q-input
-                  v-model="profileForm.lastName"
-                  outlined
-                  :debounce="debounceLength"
-                  :label="$t('form.lastName')"
-                  :rules="[
-                    (val) =>
-                      validateNotEmpty(val) || $t('validation.cannotBeEmpty'),
-                  ]"
-                  @update:model-value="saveChange('lastName')"
-                >
-                  <template #append>
-                    <saved-notification
-                      :success="saved.lastName"
                       :error="saved.error"
                     />
                   </template>

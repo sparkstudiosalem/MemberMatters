@@ -43,4 +43,20 @@ urlpatterns = [
         name="api_user_site_session",
     ),
     path("api/kiosks/<int:id>/", views.Kiosks.as_view(), name="api_kiosks"),
+    # Authentik SSO / OIDC Endpoints
+    path(
+        "api/auth/authentik/login/",
+        views.AuthentikLogin.as_view(),
+        name="authentik_login",
+    ),
+    path(
+        "api/auth/authentik/callback/",
+        views.AuthentikCallback.as_view(),
+        name="authentik_callback",
+    ),
+    path(
+        "api/auth/authentik/logout/",
+        views.AuthentikLogout.as_view(),
+        name="authentik_logout",
+    ),
 ]

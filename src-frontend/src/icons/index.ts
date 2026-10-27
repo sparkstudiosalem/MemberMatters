@@ -47,7 +47,7 @@ export default {
   close: 'mdi-close',
   success: 'mdi-check',
   fail: 'mdi-close',
-  add: 'mdi-plus-circle',
+  add: 'mdi-plus',
   addAlternative: 'mdi-plus',
   remove: 'mdi-trash-can',
   up: 'mdi-chevron-down',
@@ -57,6 +57,9 @@ export default {
   billing: 'mdi-credit-card',
   visibility: 'mdi-eye',
   visibilityOff: 'mdi-eye-off',
+
+  key: 'mdi-key-variant',
+  sso: 'mdi-shield-key-outline',
 
   rfid: 'mdi-key-wireless',
   rfidSlash: 'mdi-key-remove',
@@ -74,6 +77,7 @@ export default {
   interlock: 'mdi-tools',
   lock: 'mdi-lock-outline',
   unlock: 'mdi-lock-open-variant-outline',
+  phone: 'mdi-phone',
 
   member_count_total: 'mdi-account-multiple',
   member_count_6_months_total: 'mdi-account-multiple',

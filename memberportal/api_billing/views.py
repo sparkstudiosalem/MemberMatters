@@ -87,7 +87,10 @@ class MemberBucksAddCard(StripeAPIView):
                     "stripe",
                 )
 
-                intent = stripe.SetupIntent.create(customer=profile.stripe_customer_id)
+                intent = stripe.SetupIntent.create(
+                    customer=profile.stripe_customer_id,
+                    payment_method_types=["card", "us_bank_account"],
+                )
 
                 return Response({"clientSecret": intent.client_secret})
 
@@ -123,7 +126,10 @@ class MemberBucksAddCard(StripeAPIView):
                 )
 
         else:
-            intent = stripe.SetupIntent.create(customer=profile.stripe_customer_id)
+            intent = stripe.SetupIntent.create(
+                customer=profile.stripe_customer_id,
+                payment_method_types=["card", "us_bank_account"],
+            )
 
             return Response({"clientSecret": intent.client_secret})
 
@@ -132,9 +138,21 @@ class MemberBucksAddCard(StripeAPIView):
         payment_method_id = request.data.get("paymentMethodId")
 
         payment_method = stripe.PaymentMethod.retrieve(payment_method_id)
+        pm_type = payment_method.get("type", "")
 
-        profile.stripe_card_last_digits = payment_method["card"]["last4"]
-        profile.stripe_card_expiry = f"{str(payment_method['card']['exp_month']).zfill(2)}/{str(payment_method['card']['exp_year'])}"
+        if pm_type == "us_bank_account":
+            bank_data = payment_method.get("us_bank_account", {})
+            profile.stripe_card_last_digits = bank_data.get("last4", "")
+            profile.stripe_card_expiry = "ACH"
+        elif pm_type == "card":
+            card_data = payment_method.get("card", {})
+            profile.stripe_card_last_digits = card_data.get("last4", "")
+            profile.stripe_card_expiry = f"{str(card_data.get('exp_month')).zfill(2)}/{str(card_data.get('exp_year'))}"
+        else:
+            sub_data = payment_method.get(pm_type, {}) if pm_type else {}
+            profile.stripe_card_last_digits = sub_data.get("last4", "")
+            profile.stripe_card_expiry = "ACH" if "bank" in pm_type else ""
+
         profile.stripe_payment_method_id = payment_method_id
         profile.save()
 
@@ -151,14 +169,17 @@ class MemberBucksAddCard(StripeAPIView):
             },
         )
 
-        subject = f"You just added a payment card to your {config.SITE_OWNER} account."
+        subject = (
+            f"You just added a payment method ({'ACH Bank Transfer' if pm_type == 'us_bank_account' else 'Card'}) "
+            f"to your {config.SITE_OWNER} account."
+        )
 
         try:
             request.user.email_notification(
                 subject,
-                "Don't worry, your card details are stored safe "
+                "Don't worry, your billing details are stored safely "
                 "with Stripe and are not on our servers. You "
-                "can remove this card at any time via the "
+                "can remove or change this payment method at any time via the "
                 f"{config.SITE_NAME}.",
             )
         except Exception as e:

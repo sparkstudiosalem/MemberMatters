@@ -1,146 +1,176 @@
 <template>
-  <div>
-    <q-card-section>
-      <div class="text-h6">
-        {{ $t('memberbucks.addCard') }}
+  <div class="q-pa-xs">
+    <q-card-section class="q-pb-xs">
+      <div class="text-h6 text-weight-bold">Add Card</div>
+      <div class="text-caption text-grey-6 q-mb-md">
+        Add your card below. We don't store your credit card info other than the last 4 digits and expiry. Our secure payment provider stores your card for us.
       </div>
-
-      {{ $t('memberbucks.addCardDescription') }}
     </q-card-section>
 
     <q-card-section>
-      <div id="stripe-card-element" class="q-pa-sm" />
+      <div id="stripe-card-element" class="q-mb-md"></div>
 
-      <div class="row q-pa-sm">
-        <q-space />
-        <q-btn
-          id="card-button"
-          :disable="disableStripeForm"
-          :loading="disableStripeForm"
-          color="primary"
-        >
-          {{ $t('memberbucks.saveCard') }}
-        </q-btn>
-        <q-space />
+      <div v-if="error" class="text-negative text-caption q-mb-md">
+        {{ error }}
       </div>
 
-      <q-banner v-if="error" class="text-white bg-red">
-        {{ $t(this.error || 'memberbucks.addCardError') }}
-      </q-banner>
+      <div class="row justify-center q-mt-md">
+        <q-btn
+          id="save-card-button"
+          :loading="loading"
+          :disable="loading || !stripeReady"
+          color="primary"
+          icon="mdi-credit-card"
+          label="Save Payment Card"
+          class="q-px-lg"
+          @click="saveCard"
+        />
+      </div>
     </q-card-section>
   </div>
 </template>
 
 <script>
-import icons from '@icons';
 import { mapGetters, mapActions } from 'vuex';
-import { Dark } from 'quasar';
-import { loadStripe } from '@stripe/stripe-js';
 
 export default {
   name: 'MemberBucksAddCard',
   data() {
     return {
       stripe: null,
-      disableStripeForm: false,
-      error: null,
+      card: null,
+      loading: false,
+      stripeReady: false,
+      error: '',
     };
   },
-  watch: {
-    async keys(value) {
-      if (!this.stripe) await this.setupStripe(value.stripePublishableKey);
+  computed: {
+    ...mapGetters('config', ['features', 'keys']),
+    stripeKey() {
+      return (
+        this.keys?.stripePublishableKey ||
+        this.features?.stripePublishableKey ||
+        ''
+      );
     },
   },
-  async mounted() {
-    if (
-      !this.stripe &&
-      this.features.enableStripe &&
-      this.keys.stripePublishableKey
-    ) {
-      await this.setupStripe(this.keys.stripePublishableKey);
+  watch: {
+    stripeKey: {
+      immediate: true,
+      handler(key) {
+        if (key && !this.card) {
+          this.$nextTick(() => {
+            this.initStripe();
+          });
+        }
+      },
+    },
+  },
+  mounted() {
+    if (this.stripeKey && !this.card) {
+      this.$nextTick(() => {
+        this.initStripe();
+      });
     }
   },
   methods: {
     ...mapActions('profile', ['getProfile']),
-    async setupStripe(stripePublishableKey) {
-      this.stripe = await loadStripe(stripePublishableKey);
+    initStripe() {
+      if (this.card) return;
+      if (window.Stripe) {
+        this.mountCardElement();
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://js.stripe.com/v3/';
+        script.onload = () => {
+          this.mountCardElement();
+        };
+        document.head.appendChild(script);
+      }
+    },
+    mountCardElement() {
+      if (this.card) return;
+      const key = this.stripeKey;
+      if (!key) {
+        console.warn('Stripe publishable key missing in site configuration.');
+        return;
+      }
 
-      const elements = this.stripe.elements();
-      const cardElement = elements.create('card', {
-        style: {
+      try {
+        const targetEl = document.querySelector('#stripe-card-element');
+        if (!targetEl) {
+          console.warn('#stripe-card-element container not found in DOM.');
+          return;
+        }
+
+        this.stripe = window.Stripe(key);
+        const elements = this.stripe.elements();
+
+        const style = {
           base: {
-            color: Dark.isActive ? '#fff' : '#000',
-            iconColor: Dark.isActive ? '#fff' : '#000',
-            fontWeight: 400,
-            fontFamily: 'Roboto, Open Sans, Segoe UI, sans-serif',
+            color: '#ffffff',
+            fontFamily: 'Inter, Roboto, -apple-system, sans-serif',
             fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            lineHeight: '24px',
             '::placeholder': {
-              color: Dark.isActive ? '#fff' : '#000',
+              color: '#d0d0d0',
             },
+            ':-webkit-autofill': {
+              color: '#ffffff',
+            },
+            iconColor: '#FDD30B',
           },
-        },
-      });
-      cardElement.mount('#stripe-card-element');
+          invalid: {
+            color: '#ff6b6b',
+            iconColor: '#ff6b6b',
+          },
+        };
 
-      const cardButton = document.getElementById('card-button');
+        this.card = elements.create('card', { style, hidePostalCode: true });
+        this.card.mount('#stripe-card-element');
+        this.card.on('ready', () => {
+          this.stripeReady = true;
+        });
+        this.card.on('change', (event) => {
+          this.error = event.error ? event.error.message : '';
+        });
+      } catch (e) {
+        console.error('Error initializing Stripe elements:', e);
+      }
+    },
+    async saveCard() {
+      if (!this.stripe || !this.card) return;
+      this.loading = true;
+      this.error = '';
+
+      const { paymentMethod, error } = await this.stripe.createPaymentMethod({
+        type: 'card',
+        card: this.card,
+      });
+
+      if (error) {
+        this.error = error.message;
+        this.loading = false;
+        return;
+      }
 
       this.$axios
-        .get('/api/billing/card/')
-        .then((response) => {
-          cardButton.addEventListener('click', async () => {
-            this.disableStripeForm = true;
-            this.error = null;
-            const { setupIntent, error } = await this.stripe.confirmCardSetup(
-              response.data.clientSecret,
-              {
-                payment_method: {
-                  card: cardElement,
-                  billing_details: {
-                    name: this.profile.fullName,
-                  },
-                },
-              }
-            );
-
-            if (error) {
-              this.error = error.message;
-              this.disableStripeForm = false;
-            } else if (setupIntent.status === 'succeeded') {
-              this.$axios
-                .post('/api/billing/card/', {
-                  paymentMethodId: setupIntent.payment_method,
-                })
-                .then(() => {
-                  this.getProfile();
-                  this.hide();
-                })
-                .catch((error) => {
-                  this.error = error.response.data.message;
-                })
-                .finally(() => (this.disableStripeForm = false));
-            }
-          });
+        .post('/api/billing/card/', {
+          paymentMethodId: paymentMethod.id,
         })
-        .catch(() => {
-          this.error = this.$t('memberbucks.addCardError');
+        .then(async () => {
+          await this.getProfile();
+          this.$emit('card-saved');
+        })
+        .catch((err) => {
+          this.error =
+            err.response?.data?.message || 'Error saving card details.';
+        })
+        .finally(() => {
+          this.loading = false;
         });
-    },
-    hide() {
-      this.$emit('hide');
-    },
-  },
-  computed: {
-    ...mapGetters('profile', ['profile']),
-    ...mapGetters('config', ['keys', 'features']),
-    icons() {
-      return icons;
     },
   },
 };
 </script>
-
-<style scoped>
-#stripe-card-element {
-  border: solid gray 1px;
-}
-</style>

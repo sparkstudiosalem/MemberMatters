@@ -1,10 +1,14 @@
+import os
+import requests
 import sentry_sdk
+from django.shortcuts import HttpResponseRedirect
 from django.contrib.auth import (
     authenticate,
     login,
     logout,
 )
 import logging
+from django.db import connection
 from constance import config
 import json
 from django.utils.timezone import make_aware
@@ -19,7 +23,8 @@ from .models import Kiosk, SiteSession, EmailVerificationToken
 from services.discord import post_kiosk_swipe_to_discord
 from services.slack import post_kiosk_swipe_to_slack
 import base64
-from urllib.parse import parse_qs, urlencode
+import urllib.parse
+from urllib.parse import parse_qs, urlencode, quote
 import hmac
 import hashlib
 
@@ -61,6 +66,8 @@ class GetConfig(APIView):
                 "footer": config.SMS_FOOTER,
             },
             "enableStatsPage": config.ENABLE_STATS_PAGE,
+            "enableAuthentik": True,
+            "authentikLoginUrl": "/api/auth/authentik/login/",
         }
 
         keys = {"stripePublishableKey": config.STRIPE_PUBLISHABLE_KEY}
@@ -300,8 +307,38 @@ class Logout(APIView):
 
     def post(self, request):
         logout(request)
+        authentik_domain = os.environ.get("AUTHENTIK_DOMAIN", "auth.sparkstudiosalem.com")
+        invalidation_url = f"https://{authentik_domain}/flows/-/default/invalidation/?next=https://members.sparkstudiosalem.com/login?logged_out=true"
 
-        return Response({"success": True})
+        return Response({
+            "success": True,
+            "invalidation_url": invalidation_url,
+        })
+
+
+class AuthentikLogout(APIView):
+    """
+    get, post: Ends the Django session and redirects browser to Authentik invalidation flow.
+    """
+
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        logout(request)
+        authentik_domain = os.environ.get("AUTHENTIK_DOMAIN", "auth.sparkstudiosalem.com")
+        next_url = request.GET.get("next", "https://members.sparkstudiosalem.com/login?logged_out=true")
+        invalidation_url = f"https://{authentik_domain}/flows/-/default/invalidation/?next={urllib.parse.quote(next_url)}"
+        return HttpResponseRedirect(invalidation_url)
+
+    def post(self, request):
+        logout(request)
+        authentik_domain = os.environ.get("AUTHENTIK_DOMAIN", "auth.sparkstudiosalem.com")
+        next_url = request.data.get("next", "https://members.sparkstudiosalem.com/login?logged_out=true")
+        invalidation_url = f"https://{authentik_domain}/flows/-/default/invalidation/?next={urllib.parse.quote(next_url)}"
+        return Response({
+            "success": True,
+            "invalidation_url": invalidation_url,
+        })
 
 
 class ResetPassword(APIView):
@@ -393,6 +430,8 @@ class ProfileDetail(generics.GenericAPIView):
                     "savedCard": {
                         "last4": p.stripe_card_last_digits,
                         "expiry": p.stripe_card_expiry,
+                        "type": getattr(p, "stripe_payment_method_type", "us_bank_account" if p.stripe_card_expiry == "ACH" else "card"),
+                        "bankName": getattr(p, "stripe_bank_name", "US Bank" if p.stripe_card_expiry == "ACH" else ""),
                     },
                 },
                 "membershipPlan": (
@@ -413,38 +452,25 @@ class ProfileDetail(generics.GenericAPIView):
     def put(self, request):
         p = request.user.profile
         body = json.loads(request.body)
-        email = body.get("email").lower()
-        screen_name = body.get("screenName").lower()
-
-        # check if email is specified
-        if not email:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        # check if email is already in use
-        if User.objects.filter(email=email).exists() and email != request.user.email:
-            return Response(
-                {"message": "error.accountAlreadyExists"},
-                status=status.HTTP_409_CONFLICT,
-            )
+        screen_name = body.get("screenName", "").strip().lower()
 
         # check if screen name is already in use
         if (
-            Profile.objects.filter(screen_name=screen_name).exists()
-            and screen_name != request.user.profile.screen_name
+            screen_name
+            and Profile.objects.filter(screen_name=screen_name).exists()
+            and screen_name != (request.user.profile.screen_name or "").lower()
         ):
             return Response(
                 {"message": "error.screenNameAlreadyExists"},
                 status=status.HTTP_409_CONFLICT,
             )
 
-        request.user.email = body.get("email")
         p.first_name = body.get("firstName")
         p.last_name = body.get("lastName")
         p.phone = body.get("phone")
         p.screen_name = body.get("screenName")
         p.vehicle_registration_plate = body.get("vehicleRegistrationPlate")
 
-        request.user.save()
         p.save()
 
         return Response({"success": True})
@@ -791,3 +817,249 @@ class VerifyEmail(APIView):
                 {"message": "error.emailVerificationExpired"},
                 status=status.HTTP_403_FORBIDDEN,
             )
+
+
+class AuthentikLogin(APIView):
+    """
+    get: Redirects browser to Authentik OAuth2/OIDC authorization endpoint.
+    """
+
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        authentik_domain = os.environ.get("AUTHENTIK_DOMAIN_NAME", "auth.sparkstudiosalem.com")
+        client_id = os.environ.get("AUTHENTIK_CLIENT_ID", os.environ.get("AUTHENTIK_MEMBERMATTERS_CLIENT_ID", "membermatters"))
+
+        host = request.get_host()
+        proto = "https" if request.is_secure() or request.META.get("HTTP_X_FORWARDED_PROTO") == "https" else "http"
+        if "localhost" in host or "127.0.0.1" in host:
+            redirect_uri = f"{proto}://{host}/api/auth/authentik/callback/"
+        else:
+            membermatters_domain = os.environ.get("MEMBERMATTERS_DOMAIN_NAME", os.environ.get("DOMAIN_NAME", host))
+            redirect_uri = f"https://{membermatters_domain}/api/auth/authentik/callback/"
+
+        next_url = request.GET.get("next") or request.GET.get("nextUrl") or "/dashboard"
+        state_dict = {"next": next_url}
+        state = base64.urlsafe_b64encode(json.dumps(state_dict).encode()).decode()
+
+        auth_url = (
+            f"https://{authentik_domain}/application/o/authorize/?"
+            + urlencode(
+                {
+                    "client_id": client_id,
+                    "response_type": "code",
+                    "redirect_uri": redirect_uri,
+                    "scope": "openid email profile",
+                    "state": state,
+                }
+            )
+        )
+
+        if request.headers.get("Accept") == "application/json" and not request.GET.get("redirect", "true") == "true":
+            return Response({"auth_url": auth_url})
+
+        return HttpResponseRedirect(auth_url)
+
+
+class AuthentikCallback(APIView):
+    """
+    get: Handles OAuth2/OIDC callback from Authentik, provisions/authenticates user, and starts session.
+    """
+
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        code = request.GET.get("code")
+        state_raw = request.GET.get("state")
+        next_url = "/dashboard"
+        if state_raw:
+            try:
+                state_dict = json.loads(base64.urlsafe_b64decode(state_raw.encode()).decode())
+                next_url = state_dict.get("next", "/dashboard")
+            except Exception:
+                pass
+
+        if not code:
+            logger.error("Authentik callback received without code.")
+            return HttpResponseRedirect("/login?error=sso_missing_code")
+
+        authentik_domain = os.environ.get("AUTHENTIK_DOMAIN_NAME", "auth.sparkstudiosalem.com")
+        client_id = os.environ.get("AUTHENTIK_CLIENT_ID", os.environ.get("AUTHENTIK_MEMBERMATTERS_CLIENT_ID", "membermatters"))
+        client_secret = os.environ.get("AUTHENTIK_CLIENT_SECRET", os.environ.get("AUTHENTIK_MEMBERMATTERS_CLIENT_SECRET", "membermatters-secret-key"))
+        internal_url = os.environ.get("AUTHENTIK_INTERNAL_URL", "http://authentik-server:9000").rstrip("/")
+
+        host = request.get_host()
+        proto = "https" if request.is_secure() or request.META.get("HTTP_X_FORWARDED_PROTO") == "https" else "http"
+        if "localhost" in host or "127.0.0.1" in host:
+            redirect_uri = f"{proto}://{host}/api/auth/authentik/callback/"
+        else:
+            membermatters_domain = os.environ.get("MEMBERMATTERS_DOMAIN_NAME", os.environ.get("DOMAIN_NAME", host))
+            redirect_uri = f"https://{membermatters_domain}/api/auth/authentik/callback/"
+
+        # 1. Exchange authorization code for tokens
+        token_urls = [
+            f"{internal_url}/application/o/token/",
+            f"https://{authentik_domain}/application/o/token/",
+        ]
+
+        token_response = None
+        for t_url in token_urls:
+            try:
+                r = requests.post(
+                    t_url,
+                    data={
+                        "grant_type": "authorization_code",
+                        "code": code,
+                        "redirect_uri": redirect_uri,
+                        "client_id": client_id,
+                        "client_secret": client_secret,
+                    },
+                    timeout=10,
+                )
+                if r.status_code == 200:
+                    token_response = r.json()
+                    break
+                else:
+                    logger.warning(f"Failed token exchange against {t_url}: {r.status_code} {r.text}")
+            except Exception as e:
+                logger.warning(f"Error contacting {t_url}: {e}")
+
+        if not token_response or "access_token" not in token_response:
+            logger.error(f"Failed to obtain access token from Authentik. Response: {token_response}")
+            return HttpResponseRedirect("/login?error=sso_token_failed")
+
+        access_token = token_response["access_token"]
+
+        # 2. Fetch UserInfo
+        userinfo_urls = [
+            f"{internal_url}/application/o/userinfo/",
+            f"https://{authentik_domain}/application/o/userinfo/",
+        ]
+
+        user_info = None
+        for u_url in userinfo_urls:
+            try:
+                r = requests.get(
+                    u_url,
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=10,
+                )
+                if r.status_code == 200:
+                    user_info = r.json()
+                    break
+            except Exception as e:
+                logger.warning(f"Error fetching userinfo from {u_url}: {e}")
+
+        if not user_info:
+            logger.error("Failed to retrieve userinfo from Authentik.")
+            return HttpResponseRedirect("/login?error=sso_userinfo_failed")
+
+        sub = str(user_info.get("sub") or user_info.get("pk") or "").strip()
+        email = user_info.get("email", "").strip().lower()
+        if not email:
+            logger.error("Authentik userinfo did not contain an email address.")
+            return HttpResponseRedirect("/login?error=sso_no_email")
+
+        # 3. Authenticate or create user in MemberMatters Django DB
+        first_name = user_info.get("given_name") or ""
+        last_name = user_info.get("family_name") or ""
+        full_name = user_info.get("name") or ""
+        preferred_username = user_info.get("preferred_username") or user_info.get("nickname") or email.split("@")[0]
+
+        if not first_name and full_name:
+            parts = full_name.split()
+            first_name = parts[0]
+            if len(parts) > 1:
+                last_name = " ".join(parts[1:])
+        elif not first_name:
+            first_name = preferred_username
+
+        # Ensure SSO mapping table exists
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS authentik_sso_mapping (
+                        authentik_sub VARCHAR(255) PRIMARY KEY,
+                        user_id INTEGER UNIQUE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """
+                )
+        except Exception as e:
+            logger.error(f"Failed to ensure authentik_sso_mapping table: {e}")
+
+        user = None
+        if sub:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "SELECT user_id FROM authentik_sso_mapping WHERE authentik_sub = %s",
+                        [sub],
+                    )
+                    row = cursor.fetchone()
+                    if row:
+                        user_id = row[0]
+                        try:
+                            user = User.objects.get(id=user_id)
+                        except User.DoesNotExist:
+                            user = None
+            except Exception as e:
+                logger.error(f"Error querying authentik_sso_mapping: {e}")
+
+        if user:
+            # User mapped by Authentik sub already exists. Update email if changed in Authentik!
+            if user.email != email:
+                logger.info(
+                    f"Authentik SSO: Updating user ID {user.id} email from {user.email} to {email}"
+                )
+                existing_with_email = User.objects.filter(email=email).exclude(id=user.id).first()
+                if existing_with_email:
+                    logger.warning(
+                        f"Authentik SSO: Email conflict on user {existing_with_email.id}. Renaming conflicting user..."
+                    )
+                    existing_with_email.email = f"old_{existing_with_email.id}_{existing_with_email.email}"
+                    existing_with_email.save()
+                user.email = email
+            if not user.email_verified:
+                user.email_verified = True
+            user.save()
+        else:
+            # Not yet mapped by sub. Check if existing user by email matches.
+            try:
+                user = User.objects.get(email=email)
+                if not user.email_verified:
+                    user.email_verified = True
+                    user.save()
+            except User.DoesNotExist:
+                user = User.objects.create(
+                    email=email,
+                    email_verified=True,
+                )
+                user.set_unusable_password()
+                user.save()
+
+            if sub:
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT OR REPLACE INTO authentik_sso_mapping (authentik_sub, user_id) VALUES (%s, %s)",
+                            [sub, user.id],
+                        )
+                except Exception as e:
+                    logger.error(f"Error saving to authentik_sso_mapping: {e}")
+
+        profile, created = Profile.objects.get_or_create(user=user)
+        if created or not profile.screen_name:
+            profile.first_name = first_name or profile.first_name or "Member"
+            profile.last_name = last_name or profile.last_name or ""
+            profile.screen_name = preferred_username or profile.screen_name or email.split("@")[0]
+            if not profile.state:
+                profile.state = "active"
+            profile.save()
+
+        # 4. Log the user into Django session
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        logger.info(f"User {email} (id: {user.id}) successfully authenticated via Authentik SSO.")
+
+        return HttpResponseRedirect(next_url)

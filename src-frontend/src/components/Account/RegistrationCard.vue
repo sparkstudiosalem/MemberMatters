@@ -25,52 +25,58 @@
               class="col-12"
               autofocus
               filled
+              no-error-icon
               type="email"
               :label="$t('form.email')"
               lazy-rules
               :rules="[
                 (val) => validateEmail(val) || $t('validation.invalidEmail'),
               ]"
-            />
+            >
+              <template v-slot:prepend>
+                <q-icon :name="icons.email" />
+              </template>
+            </q-input>
 
             <q-input
-              v-model="form.firstName"
-              class="col-12 col-sm-6"
+              v-model="form.fullName"
+              class="col-12"
               filled
-              :label="$t('form.firstName')"
+              no-error-icon
+              label="Full name"
               lazy-rules
               :rules="[
                 (val) =>
                   validateNotEmpty(val) || $t('validation.cannotBeEmpty'),
               ]"
-            />
-            <q-input
-              v-model="form.lastName"
-              class="col-12 col-sm-6"
-              filled
-              :label="$t('form.lastName')"
-              lazy-rules
-              :rules="[
-                (val) =>
-                  validateNotEmpty(val) || $t('validation.cannotBeEmpty'),
-              ]"
-            />
+            >
+              <template v-slot:prepend>
+                <q-icon :name="icons.profile" />
+              </template>
+            </q-input>
 
             <q-input
               v-model="form.screenName"
-              class="col-12 col-sm-6"
+              class="col-12"
               filled
+              no-error-icon
               :label="$t('form.screenName')"
               lazy-rules
               :rules="[
                 (val) =>
                   validateNotEmpty(val) || $t('validation.cannotBeEmpty'),
               ]"
-            />
+            >
+              <template v-slot:prepend>
+                <q-icon :name="icons.membership" />
+              </template>
+            </q-input>
+
             <q-input
               v-model="form.mobile"
-              class="col-12 col-sm-6"
+              class="col-12"
               filled
+              no-error-icon
               type="tel"
               :label="$t('form.mobile')"
               lazy-rules
@@ -78,7 +84,11 @@
                 (val) =>
                   validateNotEmpty(val) || $t('validation.cannotBeEmpty'),
               ]"
-            />
+            >
+              <template v-slot:prepend>
+                <q-icon :name="icons.phone" />
+              </template>
+            </q-input>
 
             <q-input
               v-if="features?.signup?.collectVehicleRegistrationPlate"
@@ -87,6 +97,7 @@
               :label="$t('form.vehicleRegistrationPlate')"
               :hint="$t('form.vehicleRegistrationNote')"
               filled
+              no-error-icon
               type="text"
               lazy-rules
               :rules="[(val) => validateMax30(val) || $t('validation.max30')]"
@@ -97,6 +108,7 @@
               v-model="form.password"
               :label="$t('form.password')"
               filled
+              no-error-icon
               :type="isPwd ? 'password' : 'text'"
               lazy-rules
               :rules="[
@@ -104,6 +116,9 @@
                   validateNotEmpty(val) || $t('validation.invalidPassword'),
               ]"
             >
+              <template v-slot:prepend>
+                <q-icon :name="icons.lock" />
+              </template>
               <template v-slot:append>
                 <q-icon
                   :name="isPwd ? icons.visibilityOff : icons.visibility"
@@ -166,8 +181,7 @@ export default defineComponent({
       buttonLoading: false,
       isPwd: true,
       form: {
-        firstName: null,
-        lastName: null,
+        fullName: '',
         email: null,
         screenName: null,
         mobile: null,
@@ -202,10 +216,13 @@ export default defineComponent({
       this.error = false;
       this.buttonLoading = true;
 
+      // Send single Full Name directly in single backing database field (firstName)
+      const fullName = (this.form.fullName || '').trim();
+
       this.$axios
         .post('/api/register/', {
-          firstName: this.form.firstName,
-          lastName: this.form.lastName,
+          firstName: fullName,
+          lastName: '',
           email: this.form.email,
           screenName: this.form.screenName,
           mobile: this.form.mobile,

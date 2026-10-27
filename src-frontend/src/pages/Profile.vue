@@ -31,20 +31,26 @@
 
     <profile-form class="q-mb-lg" />
 
-    <q-btn-group push>
+    <div class="row items-center justify-center q-gutter-md q-mb-lg">
       <q-btn
-        push
-        color="toolbar"
+        class="profile-action-btn"
         label="Digital ID"
         @click="digitalId = true"
       />
       <q-btn
-        push
-        color="primary"
+        class="profile-action-btn"
+        label="Manage Authentik Account"
+        icon-right="mdi-open-in-new"
+        type="a"
+        href="https://auth.sparkstudiosalem.com/if/user/"
+        target="_blank"
+      />
+      <q-btn
+        class="profile-action-btn"
         label="Change Password"
         @click="changePassword = true"
       />
-    </q-btn-group>
+    </div>
 
     <q-dialog v-model="digitalId">
       <digital-id-card />

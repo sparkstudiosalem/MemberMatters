@@ -359,6 +359,9 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.environ.get(
     "MM_STATIC_LOCATION", "/usr/src/app/memberportal/membermatters/static"
 )
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "theme", "static"),
+]
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/login"
 MEDIA_URL = "/media/"

@@ -1,0 +1,1180 @@
+/* Spark Studio Salem Custom Theme Overrides for MemberMatters */
+
+/* Quasar & Spark Design Tokens */
+:root {
+    --q-primary: #FDD30B;
+    --q-secondary: #4a4a4a;
+    --q-accent: #2e2e2e;
+    --q-dark: #1e1e1e;
+    --q-dark-page: #121212;
+
+    /* Spark Studio Salem Design System Tokens */
+    --spark-gold: #FDD30B;
+    --spark-slate-bg: #2e2e2e;
+    --spark-slate-border: #4a4a4a;
+    --spark-page-bg-base: #070503;
+    --spark-page-gradient: radial-gradient(circle at 50% 50%, #151006 0%, #070503 100%);
+}
+
+/* 1. Global Dark Theme & Shared Page Background */
+body.spark-theme,
+body.spark-theme .q-page-container,
+body.spark-theme .q-layout,
+body.spark-theme .bg-toolbar,
+body.spark-theme .q-header,
+body.spark-theme .q-footer {
+    background-color: #121212;
+}
+
+/* Shared Page Background Component */
+body.spark-theme .bg-page-gradient,
+body.spark-theme .q-layout.bg-page-gradient,
+body.spark-theme .login-page,
+body.spark-theme .auth-page,
+body.spark-theme .error-404-page,
+body.spark-theme .password-reset-page,
+body.spark-theme .email-confirmed-page,
+body.spark-theme .register-success-page,
+body.spark-theme .q-layout:has(.bg-page-gradient),
+body.spark-theme .q-layout:has(.login-card),
+body.spark-theme .q-layout:has(.register-card),
+body.spark-theme .q-layout:has(.error-404-card),
+body.spark-theme .q-layout:has(.error-404-page),
+body.spark-theme .q-layout:has(.fixed-center),
+body.spark-theme .q-layout:has(#new-password-field),
+body.spark-theme .q-layout:has(#password-field),
+body.spark-theme .q-layout:has(#username-field) {
+    position: relative;
+    min-height: 100vh;
+    background-color: var(--spark-page-bg-base);
+    background-image: 
+        radial-gradient(circle at 50% 50%, transparent 25%, rgba(0, 0, 0, 0.65) 100%),
+        var(--spark-page-gradient);
+    background-attachment: fixed;
+    overflow: hidden;
+}
+
+/* 
+ * Dark Metaballs Background Effect
+ */
+body.spark-theme .bg-page-gradient::before,
+body.spark-theme .q-layout.bg-page-gradient::before,
+body.spark-theme .login-page::before,
+body.spark-theme .auth-page::before,
+body.spark-theme .error-404-page::before,
+body.spark-theme .password-reset-page::before,
+body.spark-theme .email-confirmed-page::before,
+body.spark-theme .register-success-page::before,
+body.spark-theme .q-layout:has(.bg-page-gradient)::before,
+body.spark-theme .q-layout:has(.login-card)::before,
+body.spark-theme .q-layout:has(.register-card)::before,
+body.spark-theme .q-layout:has(.fixed-center)::before,
+body.spark-theme .q-layout:has(#new-password-field)::before,
+body.spark-theme .q-layout:has(#password-field)::before,
+body.spark-theme .q-layout:has(#username-field)::before {
+    content: '';
+    position: fixed;
+    top: -30%;
+    left: -30%;
+    width: 160vw;
+    height: 160vh;
+    pointer-events: none;
+    z-index: 0;
+    background: 
+        radial-gradient(circle at 35% 30%, rgba(180, 128, 15, 0.32) 0%, rgba(120, 78, 10, 0.18) 45%, transparent 70%),
+        radial-gradient(circle at 68% 65%, rgba(16, 160, 105, 0.26) 0%, rgba(10, 100, 65, 0.14) 40%, transparent 68%),
+        radial-gradient(circle at 50% 80%, rgba(140, 92, 10, 0.28) 0%, rgba(80, 50, 6, 0.14) 50%, transparent 75%),
+        radial-gradient(circle at 20% 70%, rgba(0, 155, 135, 0.22) 0%, transparent 55%);
+    filter: blur(75px);
+    opacity: 0.80;
+    animation: sparkBismuthMetaballs1 36s ease-in-out infinite alternate;
+    will-change: transform, opacity;
+}
+
+body.spark-theme .bg-page-gradient::after,
+body.spark-theme .q-layout.bg-page-gradient::after,
+body.spark-theme .login-page::after,
+body.spark-theme .auth-page::after,
+body.spark-theme .error-404-page::after,
+body.spark-theme .password-reset-page::after,
+body.spark-theme .email-confirmed-page::after,
+body.spark-theme .register-success-page::after,
+body.spark-theme .q-layout:has(.bg-page-gradient)::after,
+body.spark-theme .q-layout:has(.login-card)::after,
+body.spark-theme .q-layout:has(.register-card)::after,
+body.spark-theme .q-layout:has(.fixed-center)::after,
+body.spark-theme .q-layout:has(#new-password-field)::after,
+body.spark-theme .q-layout:has(#password-field)::after,
+body.spark-theme .q-layout:has(#username-field)::after {
+    content: '';
+    position: fixed;
+    top: -30%;
+    left: -30%;
+    width: 160vw;
+    height: 160vh;
+    pointer-events: none;
+    z-index: 0;
+    background: 
+        radial-gradient(circle at 62% 28%, rgba(150, 45, 230, 0.28) 0%, rgba(95, 20, 160, 0.14) 42%, transparent 70%),
+        radial-gradient(circle at 30% 65%, rgba(253, 211, 11, 0.24) 0%, rgba(180, 140, 10, 0.12) 38%, transparent 65%),
+        radial-gradient(circle at 75% 75%, rgba(120, 30, 175, 0.22) 0%, transparent 60%),
+        radial-gradient(circle at 45% 40%, rgba(160, 105, 12, 0.28) 0%, transparent 65%);
+    filter: blur(85px);
+    opacity: 0.75;
+    animation: sparkBismuthMetaballs2 48s ease-in-out infinite alternate;
+    will-change: transform, opacity;
+}
+
+@keyframes sparkBismuthMetaballs1 {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    33% { transform: translate(7vw, -6vh) scale(1.10) rotate(45deg); }
+    66% { transform: translate(-6vw, 8vh) scale(0.92) rotate(90deg); }
+    100% { transform: translate(5vw, -4vh) scale(1.05) rotate(135deg); }
+}
+
+@keyframes sparkBismuthMetaballs2 {
+    0% { transform: translate(0, 0) scale(1.05) rotate(0deg); }
+    40% { transform: translate(-8vw, 6vh) scale(0.94) rotate(-60deg); }
+    75% { transform: translate(6vw, -8vh) scale(1.12) rotate(-120deg); }
+    100% { transform: translate(-4vw, 5vh) scale(0.98) rotate(-180deg); }
+}
+
+/* Elevate page cards and content above metaball backdrop */
+body.spark-theme .bg-page-gradient .q-card,
+body.spark-theme .login-page .q-card,
+body.spark-theme .auth-page .q-card,
+body.spark-theme .error-404-page .q-card,
+body.spark-theme .password-reset-page .q-card,
+body.spark-theme .email-confirmed-page .q-card,
+body.spark-theme .q-layout:has(.bg-page-gradient) .q-card,
+body.spark-theme .login-card,
+body.spark-theme .register-card,
+body.spark-theme .fixed-center {
+    position: relative;
+    z-index: 1;
+}
+
+body.spark-theme .q-header,
+body.spark-theme .q-header .q-toolbar,
+body.spark-theme .bg-toolbar {
+    background-color: #181818;
+    color: #ffffff;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+/* 2. Sidebar Drawer Header Override */
+body.spark-theme .q-drawer {
+    background-color: #181818;
+    color: #e0e0e0;
+}
+
+body.spark-theme .q-drawer .absolute-top.q-img {
+    background-color: #222222;
+    border-bottom: 1px solid #2d2d2d;
+    height: 150px;
+}
+
+body.spark-theme .q-drawer .absolute-top.q-img .q-img__image {
+    display: block;
+    opacity: 0;
+    visibility: visible;
+}
+
+body.spark-theme .q-drawer .absolute-top.q-img .q-img__loading,
+body.spark-theme .q-drawer .absolute-top.q-img .q-spinner {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+body.spark-theme .q-drawer .absolute-top.q-img .q-img__content {
+    opacity: 1;
+    visibility: visible;
+    background-color: #222222;
+    color: #FDD30B;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px;
+}
+
+body.spark-theme .q-drawer .absolute-top.q-img .absolute-bottom {
+    position: relative;
+    opacity: 1;
+    visibility: visible;
+    display: block;
+    background: transparent;
+    padding: 0;
+    color: #FDD30B;
+}
+
+body.spark-theme .q-drawer .absolute-top.q-img .q-avatar,
+body.spark-theme .q-drawer .absolute-top.q-img .q-avatar .q-icon,
+body.spark-theme .q-drawer .absolute-top.q-img .text-weight-bold,
+body.spark-theme .q-drawer .absolute-top.q-img div {
+    color: #FDD30B;
+    opacity: 1;
+    visibility: visible;
+}
+
+body.spark-theme .q-drawer .absolute-top.q-img .text-weight-bold {
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.3;
+}
+
+body.spark-theme .q-drawer .footer .q-img__image {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
+body.spark-theme .q-drawer .footer .q-img {
+    background: transparent;
+}
+
+/* 
+ * 3. Quasar Native Input Field Customizations 
+ * Smooth 60fps floating labels and perfect vertical positioning for <q-input filled> and <q-input outlined>
+ */
+
+body.spark-theme .q-field {
+    background: transparent;
+}
+
+/* Disable Quasar pseudo-element overlays cleanly */
+body.spark-theme .q-field--filled .q-field__control::before,
+body.spark-theme .q-field--filled .q-field__control::after,
+body.spark-theme .q-field--standard .q-field__control::before,
+body.spark-theme .q-field--standard .q-field__control::after,
+body.spark-theme .q-field--outlined .q-field__control::before,
+body.spark-theme .q-field--outlined .q-field__control::after {
+    display: none !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Quasar Control Container Base */
+body.spark-theme .q-field__control {
+    background-color: #2e2e2e;
+    border: 1px solid #4a4a4a;
+    border-radius: 8px;
+    padding: 0 12px;
+    min-height: 56px;
+    height: 56px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Focused Control Border */
+body.spark-theme .q-field--focused .q-field__control {
+    border-color: var(--q-primary);
+    box-shadow: 0 0 0 1px var(--q-primary);
+}
+
+/* Error Control State */
+body.spark-theme .q-field--error .q-field__control {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 1px #ef4444;
+}
+
+/* Control Container Flex Alignment */
+body.spark-theme .q-field__control-container {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+    padding: 0 !important;
+}
+
+/* Prepend & Append Icons - Centered Vertically */
+body.spark-theme .q-field__prepend,
+body.spark-theme .q-field__append {
+    display: flex;
+    align-items: center;
+    align-self: center;
+    height: 100%;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+body.spark-theme .q-field__prepend .q-icon,
+body.spark-theme .q-field__append .q-icon {
+    color: #b0b0b0;
+    transition: color 0.2s ease;
+}
+
+body.spark-theme .q-field--focused .q-field__prepend .q-icon,
+body.spark-theme .q-field--focused .q-field__append .q-icon {
+    color: var(--q-primary);
+}
+
+body.spark-theme .q-field--error .q-field__prepend .q-icon {
+    color: #ef4444;
+}
+
+/* Hide default error exclamation icon */
+body.spark-theme .q-field__error-icon,
+body.spark-theme .q-field--error .q-field__append .q-icon:not(.cursor-pointer) {
+    display: none !important;
+}
+
+/* Currency Prefix Baseline Alignment */
+body.spark-theme .q-field__prefix {
+    color: #ffffff;
+    padding-right: 4px;
+}
+
+/* 
+ * Label Styling: Silky Smooth 60fps Float Animation
+ * Unfocused empty state: Centered vertically at top: 50%, translateY(-50%)
+ * Focused/Float state: Moves to top: 6px, translateY(0), scale(0.75)
+ */
+body.spark-theme .q-field__label {
+    position: absolute !important;
+    top: 50% !important;
+    left: 0 !important;
+    transform: translateY(-50%) scale(1) !important;
+    transform-origin: left top !important;
+    color: #b0b0b0 !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), top 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease !important;
+    will-change: transform, top;
+}
+
+body.spark-theme .q-field--float .q-field__label,
+body.spark-theme .q-field--focused .q-field__label,
+body.spark-theme .q-field--filled.q-field--focused .q-field__label,
+body.spark-theme .q-field--outlined.q-field--focused .q-field__label,
+body.spark-theme .q-field:has(input:-webkit-autofill) .q-field__label {
+    top: 6px !important;
+    transform: translateY(0) scale(0.75) !important;
+    color: var(--q-primary) !important;
+    font-weight: 600 !important;
+}
+
+body.spark-theme .q-field--error .q-field__label {
+    color: #ef4444 !important;
+}
+
+/* Native Input Element Alignment */
+body.spark-theme .q-field__native,
+body.spark-theme .q-field__input,
+body.spark-theme input,
+body.spark-theme textarea,
+body.spark-theme select {
+    color: #ffffff !important;
+    font-size: 1rem !important;
+    line-height: 20px !important;
+    height: 20px !important;
+    min-height: 20px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+    transition: margin-top 0.2s ease !important;
+}
+
+/* Floating Input Text Offset */
+body.spark-theme .q-field--float .q-field__native,
+body.spark-theme .q-field--focused .q-field__native,
+body.spark-theme .q-field--float .q-field__input,
+body.spark-theme .q-field--focused .q-field__input,
+body.spark-theme .q-field--float input,
+body.spark-theme .q-field--focused input,
+body.spark-theme .q-field:has(input:-webkit-autofill) input {
+    margin-top: 14px !important;
+}
+
+/* WebKit / Chrome Autofill Overrides */
+body.spark-theme input:-webkit-autofill,
+body.spark-theme input:-webkit-autofill:hover,
+body.spark-theme input:-webkit-autofill:focus,
+body.spark-theme input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #2e2e2e inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* 4. Action Buttons & Cards - STANDARD Buttons (No Border, Dark Background, Golden Text) */
+body.spark-theme .q-btn,
+body.spark-theme .q-btn.bg-primary,
+body.spark-theme .q-btn.bg-accent,
+body.spark-theme .q-btn--standard,
+body.spark-theme button[type="submit"],
+body.spark-theme .q-card .q-btn,
+body.spark-theme .q-table__top .q-btn {
+    background-color: #2e2e2e !important;
+    background: #2e2e2e !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+body.spark-theme .q-btn .q-btn__content,
+body.spark-theme .q-btn .q-btn__label,
+body.spark-theme .q-btn .q-icon,
+body.spark-theme .q-btn.bg-primary .q-btn__content,
+body.spark-theme .q-btn.bg-accent .q-btn__content,
+body.spark-theme button[type="submit"] .q-btn__content {
+    color: #FDD30B !important;
+    font-weight: 700 !important;
+}
+
+body.spark-theme .q-btn:hover,
+body.spark-theme .q-btn.bg-primary:hover,
+body.spark-theme .q-btn.bg-accent:hover,
+body.spark-theme button[type="submit"]:hover,
+body.spark-theme .q-card .q-btn:hover,
+body.spark-theme .q-table__top .q-btn:hover {
+    background-color: #383838 !important;
+    background: #383838 !important;
+    border: none !important;
+    box-shadow: 0 0 10px rgba(253, 211, 11, 0.25) !important;
+}
+
+/* Profile Action Buttons */
+body.spark-theme .profile-action-btn,
+body.spark-theme .q-btn.profile-action-btn,
+body.spark-theme .q-btn--outline.profile-action-btn {
+    background-color: #2e2e2e;
+    color: var(--q-primary);
+    border: 1px solid #4a4a4a;
+    border-radius: 6px;
+    font-weight: 700;
+    transition: all 0.2s ease-in-out;
+}
+
+body.spark-theme .profile-action-btn .q-btn__content,
+body.spark-theme .profile-action-btn .q-btn__label,
+body.spark-theme .q-btn--outline.profile-action-btn .q-btn__content {
+    color: var(--q-primary);
+    font-weight: 700;
+}
+
+body.spark-theme .profile-action-btn:hover,
+body.spark-theme .q-btn--outline.profile-action-btn:hover {
+    background-color: #383838;
+    border-color: var(--q-primary);
+    box-shadow: 0 0 10px rgba(253, 211, 11, 0.25);
+}
+
+/* Secondary / Flat Buttons */
+body.spark-theme .q-btn--flat.text-primary,
+body.spark-theme .q-btn--flat.text-accent,
+body.spark-theme .text-primary,
+body.spark-theme .text-accent {
+    color: var(--q-primary);
+}
+
+/* Cards & Modals */
+body.spark-theme .q-card {
+    background-color: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    color: #ffffff;
+}
+
+body.spark-theme .q-card-actions,
+body.spark-theme .q-card__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* 5. Tab Controls Styling */
+body.spark-theme .q-tabs,
+body.spark-theme .q-tabs--horizontal,
+body.spark-theme .q-tabs__content,
+body.spark-theme .q-tabs.bg-primary,
+body.spark-theme .q-tabs.bg-accent,
+body.spark-theme .q-tabs.bg-toolbar {
+    background-color: #242424;
+    color: var(--q-primary);
+    border-radius: 8px 8px 0 0;
+}
+
+body.spark-theme .q-tab {
+    color: #e0d080;
+    opacity: 0.9;
+    transition: all 0.2s ease;
+}
+
+body.spark-theme .q-tab:hover {
+    color: var(--q-primary);
+    opacity: 1;
+    background-color: rgba(253, 211, 11, 0.1);
+}
+
+body.spark-theme .q-tab--active {
+    color: var(--q-primary);
+    opacity: 1;
+    font-weight: 700;
+    background-color: #2e2e2e;
+}
+
+body.spark-theme .q-tab__label,
+body.spark-theme .q-tab__icon,
+body.spark-theme .q-tab .q-tab__content {
+    color: var(--q-primary);
+}
+
+body.spark-theme .q-tab--active .q-tab__label,
+body.spark-theme .q-tab--active .q-tab__icon {
+    color: var(--q-primary);
+    font-weight: 700;
+}
+
+body.spark-theme .q-tab__indicator {
+    background-color: var(--q-primary);
+    height: 3px;
+}
+
+/* 6. Global Component Overrides */
+body.spark-theme .q-badge--primary,
+body.spark-theme .q-badge.bg-primary,
+body.spark-theme .q-chip--primary,
+body.spark-theme .q-chip.bg-primary,
+body.spark-theme .q-avatar--primary,
+body.spark-theme .q-badge--accent,
+body.spark-theme .q-badge.bg-accent,
+body.spark-theme .q-chip--accent,
+body.spark-theme .q-chip.bg-accent {
+    background-color: var(--q-primary);
+    color: #121212;
+    font-weight: 700;
+}
+
+body.spark-theme .q-chip__content,
+body.spark-theme .q-badge {
+    color: #121212;
+}
+
+/* Tables & Data Grids */
+body.spark-theme .q-table__card,
+body.spark-theme .q-table {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+body.spark-theme .q-table th {
+    background-color: #222222;
+    color: var(--q-primary);
+    font-weight: 700;
+    border-bottom: 1px solid #333333;
+}
+
+body.spark-theme .q-table td {
+    border-bottom: 1px solid #2a2a2a;
+}
+
+body.spark-theme .q-table tbody tr:hover {
+    background-color: #262626;
+}
+
+/* Dropdown Menus, Select Popups & Modals */
+body.spark-theme .q-menu,
+body.spark-theme .q-popover,
+body.spark-theme .q-dialog .q-card,
+body.spark-theme .q-menu .q-item {
+    background-color: #1f1f1f;
+    color: #ffffff;
+    border: 1px solid #333333;
+}
+
+body.spark-theme .q-menu .q-item--active,
+body.spark-theme .q-menu .q-item:hover {
+    background-color: #2c2c2c;
+    color: var(--q-primary);
+}
+
+/* Checkboxes, Radios & Switches */
+body.spark-theme .q-checkbox__bg,
+body.spark-theme .q-radio__inner--truthy,
+body.spark-theme .q-toggle__track {
+    color: var(--q-primary);
+}
+
+body.spark-theme .q-checkbox__svg {
+    color: #121212;
+}
+
+/* Pagination Controls */
+body.spark-theme .q-pagination .q-btn--outline,
+body.spark-theme .q-pagination .q-btn--flat {
+    color: var(--q-primary);
+}
+
+body.spark-theme .q-pagination .q-btn.bg-primary {
+    background-color: var(--q-primary);
+    color: #121212;
+}
+
+/* 8. Alert Banners & Toast Notifications */
+body.spark-theme .q-banner {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 14px 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    margin-bottom: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+body.spark-theme .q-banner__avatar {
+    width: auto;
+    max-width: none;
+    flex: 0 0 auto;
+    margin-right: 12px;
+}
+
+body.spark-theme .q-banner__avatar:empty {
+    display: none;
+    margin-right: 0;
+}
+
+body.spark-theme .q-banner__content {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 100%;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.45;
+}
+
+body.spark-theme .q-banner__actions {
+    flex: 0 0 auto;
+    margin-left: 12px;
+}
+
+body.spark-theme .q-notification {
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 14px 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    margin-bottom: 16px;
+}
+
+/* Success Toast / Banner */
+body.spark-theme .q-banner.bg-positive,
+body.spark-theme .q-banner--positive,
+body.spark-theme .q-notification.bg-positive,
+body.spark-theme .q-notification--positive,
+body.spark-theme .bg-positive {
+    background-color: #222222;
+    background-image: linear-gradient(90deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-left: 4px solid #10b981;
+    color: #ffffff;
+}
+
+body.spark-theme .q-banner.bg-positive .q-icon,
+body.spark-theme .q-banner.bg-positive .q-banner__avatar,
+body.spark-theme .q-notification--positive .q-icon {
+    color: #34d399;
+}
+
+/* Error / Failure Toast / Banner */
+body.spark-theme .q-banner.bg-negative,
+body.spark-theme .q-banner--negative,
+body.spark-theme .q-notification.bg-negative,
+body.spark-theme .q-notification--negative,
+body.spark-theme .bg-negative {
+    background-color: #222222;
+    background-image: linear-gradient(90deg, rgba(239, 68, 68, 0.16) 0%, rgba(239, 68, 68, 0.08) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-left: 4px solid #ef4444;
+    color: #ffffff;
+}
+
+body.spark-theme .q-banner.bg-negative .q-icon,
+body.spark-theme .q-banner.bg-negative .q-banner__avatar,
+body.spark-theme .q-notification--negative .q-icon {
+    color: #f87171;
+}
+
+/* Warning Toast / Banner */
+body.spark-theme .q-banner.bg-warning,
+body.spark-theme .q-banner.bg-orange,
+body.spark-theme .q-banner--warning,
+body.spark-theme .q-notification.bg-warning,
+body.spark-theme .q-notification.bg-orange,
+body.spark-theme .q-notification--warning,
+body.spark-theme .bg-warning,
+body.spark-theme .bg-orange {
+    background-color: #222222;
+    background-image: linear-gradient(90deg, rgba(253, 211, 11, 0.16) 0%, rgba(253, 211, 11, 0.08) 100%);
+    border: 1px solid rgba(253, 211, 11, 0.35);
+    border-left: 4px solid var(--q-primary);
+    color: #ffffff;
+}
+
+body.spark-theme .q-banner.bg-warning .q-icon,
+body.spark-theme .q-banner.bg-orange .q-icon,
+body.spark-theme .q-banner.bg-warning .q-banner__avatar,
+body.spark-theme .q-banner.bg-orange .q-banner__avatar,
+body.spark-theme .q-notification--warning .q-icon {
+    color: var(--q-primary);
+}
+
+/* Info Toast / Banner */
+body.spark-theme .q-banner.bg-info,
+body.spark-theme .q-banner.bg-blue,
+body.spark-theme .q-banner--info,
+body.spark-theme .q-notification.bg-info,
+body.spark-theme .q-notification.bg-blue,
+body.spark-theme .q-notification--info,
+body.spark-theme .bg-info,
+body.spark-theme .bg-blue {
+    background-color: #222222;
+    background-image: linear-gradient(90deg, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.08) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-left: 4px solid #38bdf8;
+    color: #ffffff;
+}
+
+body.spark-theme .q-banner.bg-info .q-icon,
+body.spark-theme .q-banner.bg-blue .q-icon,
+body.spark-theme .q-banner.bg-info .q-banner__avatar,
+body.spark-theme .q-banner.bg-blue .q-banner__avatar,
+body.spark-theme .q-notification--info .q-icon {
+    color: #38bdf8;
+}
+
+/* 9. Form Input Row Spacing & Validation Messages */
+body.spark-theme .q-field,
+body.spark-theme .q-form .q-field,
+body.spark-theme .q-form .q-gutter-md > .q-field {
+    margin-bottom: 12px;
+}
+
+body.spark-theme .q-field--error .q-field__control {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 1px #ef4444, 0 0 8px rgba(239, 68, 68, 0.25);
+}
+
+body.spark-theme .q-field--error .q-field__label {
+    color: #f87171;
+    font-weight: 600;
+}
+
+body.spark-theme .q-field--error .q-field__prepend .q-icon {
+    color: #f87171;
+}
+
+body.spark-theme .q-field__bottom,
+body.spark-theme .q-field__messages,
+body.spark-theme .text-negative,
+body.spark-theme .q-field--error .q-field__bottom,
+body.spark-theme .q-field--error .q-field__messages {
+    color: #f87171;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.4;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    min-height: 24px;
+}
+
+body.spark-theme .q-linear-progress__model,
+body.spark-theme .q-spinner {
+    color: var(--q-primary);
+}
+
+body.spark-theme .q-linear-progress__track {
+    background-color: #333333;
+}
+
+/* 10. Auth Cards & Dialog Modal Containers */
+body.spark-theme .login-card,
+body.spark-theme .register-card,
+body.spark-theme .error-404-card,
+body.spark-theme .q-dialog .q-card {
+    min-width: 480px;
+    max-width: 560px;
+    width: 92vw;
+    padding: 24px;
+    border-radius: 12px;
+}
+
+body.spark-theme .q-page-container .q-page,
+body.spark-theme .q-page-container .q-card:not(.login-card):not(.register-card):not(.error-404-card),
+body.spark-theme .q-table__card,
+body.spark-theme .q-table__container,
+body.spark-theme .q-table {
+    min-width: unset;
+    max-width: 1280px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+body.spark-theme .q-card__actions,
+body.spark-theme .q-card-actions,
+body.spark-theme .q-dialog .q-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 18px;
+}
+
+body.spark-theme .q-card__actions .q-btn + .q-btn,
+body.spark-theme .q-card-actions .q-btn + .q-btn,
+body.spark-theme .q-dialog .q-card__actions .q-btn + .q-btn,
+body.spark-theme .q-btn + .q-btn {
+    margin-left: 12px;
+}
+
+/* 11. Search Text Field Height & Icon Alignment Fix */
+body.spark-theme .q-table__top .q-field,
+body.spark-theme .q-table__top .q-input,
+body.spark-theme .q-field--dense,
+body.spark-theme .q-table .q-field,
+body.spark-theme .q-field:has(.q-icon[name*="search"]),
+body.spark-theme .q-field:has(input[type="search"]) {
+    margin-bottom: 0;
+}
+
+body.spark-theme .q-table__top .q-field__control,
+body.spark-theme .q-field--dense .q-field__control,
+body.spark-theme .q-table .q-field__control {
+    min-height: 42px;
+    height: 42px;
+    max-height: 42px;
+}
+
+/* 12. Modal Form Width Fix */
+body.spark-theme .q-dialog .q-card [class*="offset-"],
+body.spark-theme .q-dialog .q-card-section [class*="offset-"],
+body.spark-theme .q-dialog .q-form [class*="offset-"] {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+body.spark-theme .q-dialog .q-card .q-form,
+body.spark-theme .q-dialog .q-card .q-card-section,
+body.spark-theme .q-dialog .q-card .q-field,
+body.spark-theme .q-dialog .q-card .q-input,
+body.spark-theme .q-dialog .q-card .q-select,
+body.spark-theme .q-dialog .q-card textarea,
+body.spark-theme .q-dialog .q-card .col-12,
+body.spark-theme .q-dialog .q-card div[class*="col-12"] {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    box-sizing: border-box;
+}
+
+body.spark-theme .q-dialog .q-card-section {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+body.spark-theme .q-dialog .q-card .q-field + .q-field,
+body.spark-theme .q-dialog .q-card .q-form > * + * {
+    margin-top: 14px;
+}
+
+/* 13. Standardized Modal Header Titles */
+body.spark-theme .q-dialog .q-card h5,
+body.spark-theme .q-dialog .q-card h6,
+body.spark-theme .q-dialog .q-card .text-h5,
+body.spark-theme .q-dialog .q-card .text-h6,
+body.spark-theme .q-dialog .q-card-section:first-child,
+body.spark-theme .q-dialog .q-card-section:first-child > *,
+body.spark-theme .q-dialog .q-card > div:first-child:not(.q-card__actions):not(.q-form),
+body.spark-theme .login-card h6,
+body.spark-theme .register-card h6,
+body.spark-theme .error-404-card h6 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-top: 0;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2d2d2d;
+}
+
+/* 14. Tabular Pages & Data Grid Container Width */
+body.spark-theme .q-page-container .q-page:not(.login-page):not(.auth-page):not(.error-404-page) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 24px 20px;
+    box-sizing: border-box;
+}
+
+body.spark-theme .q-page-container .q-page:not(.login-page):not(.auth-page):not(.error-404-page) > .row > div,
+body.spark-theme .q-page-container .q-page:not(.login-page):not(.auth-page):not(.error-404-page) > div > .row > div {
+    flex: 0 0 100%;
+    max-width: 1280px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+body.spark-theme .q-page-container .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) .q-form {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+body.spark-theme .q-page-container .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) .q-field,
+body.spark-theme .q-page-container .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) .q-input,
+body.spark-theme .q-page-container .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) .q-select,
+body.spark-theme .q-page-container .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+body.spark-theme .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) .q-form .q-checkbox,
+body.spark-theme .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) .q-card-section .q-checkbox {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 24px;
+    margin-bottom: 0;
+}
+
+body.spark-theme .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) .q-form div:has(.q-checkbox),
+body.spark-theme .q-page .q-card:not(.login-card):not(.register-card):not(.error-404-card) .q-card-section:has(.q-checkbox) {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+body.spark-theme .q-table__card,
+body.spark-theme .q-table__container,
+body.spark-theme .q-table,
+body.spark-theme .q-page-container .q-page > .q-card:not(.login-card):not(.register-card):not(.error-404-card),
+body.spark-theme .q-page-container .q-page > div > .q-card:not(.login-card):not(.register-card):not(.error-404-card) {
+    width: 100%;
+    max-width: 1280px;
+    align-self: center;
+    box-sizing: border-box;
+}
+
+/* 15. Table Bottom Pagination Control Spacing & Dropdown Number Alignment */
+body.spark-theme .q-table__bottom {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+    padding: 12px 20px;
+}
+
+body.spark-theme .q-table__control {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+body.spark-theme .q-table__control > span {
+    margin-right: 8px;
+    font-size: 0.875rem;
+    color: #b0b0b0;
+}
+
+body.spark-theme .q-table__bottom .q-field--dense,
+body.spark-theme .q-table__bottom .q-select {
+    margin-left: 8px;
+    margin-right: 12px;
+}
+
+body.spark-theme .q-table__bottom .q-field--dense .q-field__control,
+body.spark-theme .q-table__bottom .q-select .q-field__control {
+    min-height: 36px !important;
+    height: 36px !important;
+    max-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 10px !important;
+}
+
+body.spark-theme .q-table__bottom .q-field__control-container,
+body.spark-theme .q-table__bottom .q-select .q-field__control-container {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+}
+
+body.spark-theme .q-table__bottom .q-field__native,
+body.spark-theme .q-table__bottom .q-field__input,
+body.spark-theme .q-table__bottom .q-field__native span,
+body.spark-theme .q-table__bottom .q-select .q-field__native,
+body.spark-theme .q-table__bottom .q-select .q-field__native span,
+body.spark-theme .q-table__bottom .q-select .q-field__input {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    color: #ffffff !important;
+}
+
+body.spark-theme .q-table__bottom .q-field__append,
+body.spark-theme .q-table__bottom .q-select .q-field__append {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+    padding: 0 !important;
+}
+
+body.spark-theme .q-table__bottom .q-field__append .q-icon,
+body.spark-theme .q-table__bottom .q-select .q-field__append .q-icon {
+    color: #b0b0b0 !important;
+    font-size: 1.1rem !important;
+    margin: 0 !important;
+}
+
+/* 16. Stripe Credit Card Input Element Styling (#stripe-card-element) */
+body.spark-theme #stripe-card-element,
+body.spark-theme #card-element,
+body.spark-theme .stripe-card-element,
+body.spark-theme .stripe-card-container,
+body.spark-theme div[id*="stripe-card"],
+body.spark-theme div[id*="card-element"] {
+    background-color: #2e2e2e;
+    border: 1px solid #4a4a4a;
+    border-radius: 8px;
+    padding: 0 16px;
+    height: 56px;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 16px;
+}
+
+body.spark-theme #stripe-card-element .__PrivateStripeElement,
+body.spark-theme #card-element .__PrivateStripeElement,
+body.spark-theme .stripe-card-container .__PrivateStripeElement,
+body.spark-theme div[id*="stripe-card"] .__PrivateStripeElement,
+body.spark-theme .__PrivateStripeElement {
+    width: 100%;
+    display: block;
+    position: relative;
+    top: 3px;
+    margin: 0 !important;
+}
+
+body.spark-theme #stripe-card-element iframe,
+body.spark-theme #card-element iframe,
+body.spark-theme .stripe-card-container iframe,
+body.spark-theme div[id*="stripe-card"] iframe {
+    width: 100%;
+    height: 28px;
+    min-height: 28px;
+    display: block;
+    margin: 0;
+    color-scheme: dark;
+}
+
+body.spark-theme #stripe-card-element:hover,
+body.spark-theme #stripe-card-element:focus-within,
+body.spark-theme #card-element:hover,
+body.spark-theme #card-element:focus-within,
+body.spark-theme .stripe-card-container:hover,
+body.spark-theme .stripe-card-container:focus-within {
+    border-color: var(--q-primary);
+    box-shadow: 0 0 0 1px var(--q-primary), 0 0 8px rgba(253, 211, 11, 0.25);
+}
+
+/* 17. Billing Page Card Width Expansion & Method Selection Styling */
+body.spark-theme .q-page:has(.method-selection-btn) .q-card,
+body.spark-theme .manage-billing-card,
+body.spark-theme .q-card:has(#ach_account_number),
+body.spark-theme .q-card:has(.method-selection-btn) {
+    max-width: 720px !important;
+    width: 100% !important;
+}
+
+/* Dropdown Options Text Single-Line White-space & Truncation */
+body.spark-theme .q-select .q-field__native span,
+body.spark-theme .q-select .q-field__native {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Method Selection Card Base (ACH vs Card) */
+body.spark-theme .method-selection-btn,
+body.spark-theme .method-selection-btn.bg-grey-1 {
+    background-color: #242424 !important;
+    background: #242424 !important;
+    border: 1px solid #3d3d3d !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    transition: all 0.25s ease-in-out !important;
+}
+
+body.spark-theme .method-selection-btn .text-subtitle1 {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+body.spark-theme .method-selection-btn .text-caption,
+body.spark-theme .method-selection-btn .text-grey-7 {
+    color: #b0b0b0 !important;
+}
+
+body.spark-theme .method-selection-btn .q-icon {
+    color: #999999 !important;
+    transition: color 0.2s ease !important;
+}
+
+/* Active / Selected Method Card State */
+body.spark-theme .method-selection-btn.active-method,
+body.spark-theme .method-selection-btn.active-method.bg-blue-1 {
+    background-color: #262215 !important;
+    background: #262215 !important;
+    border: 2px solid #FDD30B !important;
+    box-shadow: 0 0 14px rgba(253, 211, 11, 0.28) !important;
+}
+
+body.spark-theme .method-selection-btn.active-method .text-subtitle1 {
+    color: #FDD30B !important;
+    font-weight: 700 !important;
+}
+
+body.spark-theme .method-selection-btn.active-method .text-caption,
+body.spark-theme .method-selection-btn.active-method .text-grey-7 {
+    color: #e0e0e0 !important;
+}
+
+body.spark-theme .method-selection-btn.active-method .q-icon {
+    color: #FDD30B !important;
+}
